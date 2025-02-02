@@ -1,7 +1,7 @@
 new commit  pipeline{
  new chnage for commit   tools{
         jdk 'myjava'
-        maven 'mymaven133'
+        maven 'mymaven130'
     }
     //more commits on the file
     //commit on github-- new one
