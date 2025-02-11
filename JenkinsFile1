@@ -1,48 +1,56 @@
-new commit  pipeline{
- new chnage for commit   tools{
-        jdk 'myjava'
-        maven 'mymaven131'
-    }
-    //more commits on the file
-    //commit on github-- new one
+pipeline {
     agent any
-    new ctsage added
-    stages{
-        stage('Checkout on git'){
-            agent any
-            steps{
-                git 'https://github.com/devops-trainer/DevOpsClassCodes.git'
+    stages {
+        stage('github validation') {
+            steps {
+                git url: 'https://github.com/saidevops8989/addressbook-project'
             }
         }
-        stage('Compile'){
-            agent any
-            steps{
+        stage('compiling the code') {
+            steps {
                 sh 'mvn compile'
             }
         }
-        stage('CodeReview'){
-            agent any
-            steps{
+        stage('testing the code') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+        stage('qa of the code') {
+            steps {
                 sh 'mvn pmd:pmd'
             }
         }
-        stage('UnitTest'){
-            agent {label 'win_slave'}
-            steps{
-                git 'https://github.com/devops-trainer/DevOpsClassCodes.git'
-                bat 'mvn test'
+        stage('package') {
+            steps {
+                sh 'mvn package'
             }
         }
-        stage('MetricCheck'){
-            agent any
-            steps{
-                sh 'mvn cobertura:cobertura -Dcobertura.report.format=xml'
-            }
-        }
-        stage('Package'){
-            agent{label 'win_slave'}
-            steps{
-                bat 'mvn package'
+        stage("deploy the project on tomcat") {
+            steps {
+                script {
+                    def env = input(
+                        prompt: 'Select environment to deploy',
+                        options: [
+                            [name: 'dev', value: 'dev'],
+                            [name: 'qa', value: 'qa'],
+                            [name: 'prod', value: 'prod']
+                        ]
+                    )
+                    if (env == 'dev') {
+                        sshagent(['your-ssh-credentials-id']) {
+                            sh "scp /var/lib/jenkins/workspace/mypipeline/target/addressbook.war ubuntu@dev-server-ip:/home/ubuntu/apache-tomcat-8.6.100/webapps/"
+                        }
+                    } else if (env == 'qa') {
+                        sshagent(['your-ssh-credentials-id']) {
+                            sh "scp /var/lib/jenkins/workspace/mypipeline/target/addressbook.war ubuntu@qa-server-ip:/home/ubuntu/apache-tomcat-8.6.100/webapps/"
+                        }
+                    } else if (env == 'prod') {
+                        sshagent(['your-ssh-credentials-id']) {
+                            sh "scp /var/lib/jenkins/workspace/mypipeline/target/addressbook.war ubuntu@prod-server-ip:/home/ubuntu/apache-tomcat-8.6.100/webapps/"
+                        }
+                    }
+                }
             }
         }
     }
