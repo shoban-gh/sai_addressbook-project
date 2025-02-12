@@ -30,7 +30,7 @@ pipeline {
             steps {
                 script {
                     def env = input(
-                        prompt: 'Select environment to deploy',
+                        prompt: 'Select environment  to deploy',
                         options: [
                             [name: 'dev', value: 'dev'],
                             [name: 'qa', value: 'qa'],
