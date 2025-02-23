@@ -1,0 +1,57 @@
+#################Before this scrip make sure you execute bewlowcmds######then start pipeline###
+usermod -a -G docker jenkins
+systemctl restart jenkins
+#################
+
+pipeline {
+    agent any
+    tools {
+        maven 'mymaven'
+    }
+    stages {
+        stage("Checkout from GitHub") {
+            steps {
+                git branch: 'master',
+                url: 'https://github.com/saidevops8989/DevOpsClassCodes.git'
+                echo 'Pulled from GitHub successfully'
+            }
+        }
+        stage("Compile the code to executable format") {
+            steps {
+                sh "mvn compile"
+                echo 'Converted the code from human-readable to machine-readable'
+            }
+        }
+        stage("Testing the code") {
+            steps {
+                sh "mvn test"
+                echo 'Run and execute the test cases'
+            }
+        }
+        stage("Code review to check quality of code") {
+            steps {
+                sh "mvn pmd:pmd"
+                echo 'Code review done'
+            }
+        }
+        stage("Convert the code to package") {
+            steps {
+                sh "mvn package"
+                echo 'Convert the files to WAR file'
+            }
+        }
+        stage("Docker Build") {
+            steps {
+                sh "docker build -t my-tomcat-app ."
+                echo 'Docker image built successfully'
+            }
+        }
+        stage("Docker Run") {
+            steps {
+               
+                sh "docker run -d -p 7080:8080 my-tomcat-app"
+                echo 'Docker container started successfully'
+            }
+        }
+    }
+}
